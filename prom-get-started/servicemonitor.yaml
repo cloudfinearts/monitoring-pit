@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: prom-node-app
+  labels:
+    # discover by prom operator
+    release: kube-prom
+spec:
+  endpoints:
+    - port: http
+      path: /prometheus
+      interval: 15s
+  selector:
+    matchLabels:
+      app: prom-node-app

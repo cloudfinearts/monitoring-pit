@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: prom-node-app
+  name: prom-node-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prom-node-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: prom-node-app
+    spec:
+      containers:
+      - image: joefastr/prom-node-app
+        name: prom-node-app
+        ports:
+        - containerPort: 80
+        resources: {}
+        volumeMounts:
+        - name: delme
+          mountPath: /delme
+      volumes:
+      - name: delme
+        persistentVolumeClaim:
+          claimName: delme
+status: {}

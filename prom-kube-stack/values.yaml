@@ -1,0 +1,12 @@
+# connection refused on GKE
+coreDns:
+  enabled: false
+
+# ServiceMonitorNamespaceSelector is empty by default
+prometheus:
+  prometheusSpec:
+    # when on, ServiceMonitorSelector will be set to label with helm release, empty selector will match all
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    scrapeConfigSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false

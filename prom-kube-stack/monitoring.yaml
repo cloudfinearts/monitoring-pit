@@ -1,0 +1,73 @@
+---
+# every servicemonitor creates own scrape job
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: node-app
+spec:
+  jobLabel: node-app
+  selector:
+    matchLabels:
+      app: node-app
+  namespaceSelector:
+    any: True
+  endpoints:
+  - port: http-metrics
+    path: /metrics
+    interval: 15s
+    relabelings:
+      - sourceLabels: [__meta_kubernetes_pod_container_image]
+        targetLabel: image
+        # implicit
+        replacement: $1
+        action: replace
+    # drop metric (final label) before ingestion, cannot probably drop default labels such as instance
+    # metricRelabelings:
+      # - sourceLabels: [instance]
+      #   regex: .*:3000
+      #   action: drop
+      # - action: labeldrop
+      #   regex: instance
+---
+# create a new job
+# apiVersion: monitoring.coreos.com/v1alpha1
+# kind: ScrapeConfig
+# metadata:
+#   name: example-app
+# spec:
+#   jobName: custom-job
+#   scrapeInterval: 15s
+#   scrapeTimeout: 10s
+#   honorTimestamps: true
+#   metricsPath: /metrics
+#   scheme: http
+#   staticConfigs:
+#     - targets:
+#         - example-app:8080
+#   relabelings:
+#     - sourceLabels: [__address__]
+#       targetLabel: instance
+#       replacement: custom-instance
+#     - sourceLabels: [__meta_kubernetes_namespace]
+#       targetLabel: namespace
+#     - sourceLabels: [__meta_kubernetes_pod_name]
+#       targetLabel: pod
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: app-pod-down
+spec:
+  groups:
+    - name: "app.rules"
+      rules:
+        - alert: PodDown
+          for: 1m
+          expr: sum(up{container="app"}) < 2
+          labels:
+            severity: critical
+            app: app-1
+          annotations:
+            message: The deployment has less than 1 pod running.
+            summary: the current deployment "app" need to have at least 2 replicas running
+            description: there seems to be a mismatch in the number of pod replicas between your alert configuration and the pod replicas

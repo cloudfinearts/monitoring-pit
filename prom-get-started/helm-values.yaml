@@ -1,0 +1,39 @@
+grafana:
+  enabled: false
+
+# prometheus:
+#   prometheusSpec:
+#     # when on, ServiceMonitorSelector will be set to label with helm release, empty selector will match all
+#     serviceMonitorSelectorNilUsesHelmValues: false
+#     podMonitorSelectorNilUsesHelmValues: false
+#     scrapeConfigSelectorNilUsesHelmValues: false
+#     ruleSelectorNilUsesHelmValues: false
+
+alertmanager:
+  enabled: true
+  # pass config directly since AlertmanagerConfig has major drawbacks (no control over merging several CRDs, namespace-scoped in regards to alerts??)
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: 'null'
+      routes:
+      - receiver: 'null'
+        matchers:
+          - alertname = "Watchdog"
+      - receiver: giants
+        # notice equal sign
+        matchers:
+          - team = giants
+        group_by: [severity, env]
+    receivers:
+    - name: 'null'
+    - name: giants
+      pagerduty_configs:
+        - service_key: "12345"
+    templates:
+    - '/etc/alertmanager/config/*.tmpl'

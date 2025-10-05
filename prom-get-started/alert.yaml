@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    release: kube-prom
+  name: prom-node-app
+spec:
+  groups:
+  - name: app
+    rules:
+    - alert: tooManyRequests
+      annotations:
+        description: 'uri "{{ $labels.uri }}" receives too many requests'
+        summary: app will soon fail miserably
+      expr: |-
+        rate(TotalRequests[5m]) > 0.11
+      for: 3m
+      labels:
+        severity: major
+        team: giants
+        env: prod
