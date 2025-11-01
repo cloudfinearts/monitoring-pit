@@ -53,7 +53,6 @@ resource "kubernetes_secret" "thanos" {
 }
 
 resource "helm_release" "prom" {
-  # https://prometheus-community.github.io/helm-charts
   chart     = "prometheus/kube-prometheus-stack"
   name      = "prom-stack"
   namespace = kubernetes_namespace.this.metadata[0].name
