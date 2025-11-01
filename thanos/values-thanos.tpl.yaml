@@ -1,0 +1,29 @@
+# bitname moved public images to legacy repo
+image:
+  repository: bitnamilegacy/thanos
+
+existingObjstoreSecret: ${THANOS_SECRET}
+
+# see endpoints (prom instances, thanos store) in thanos query UI -> endpoints, populated by chart as container flags
+query:
+  # deduplication of HA prom instances
+  replicaLabel:
+    - replica 
+  dnsDiscovery:
+    # service created by prom operator, points at prom instances
+    sidecarsService: "prometheus-operated"
+    sidecarsNamespace: "prometheus"
+
+compactor:
+  enabled: true
+  serviceAccount:
+    create: false
+    name: ${THANOS_SA}
+
+# config injected automatically via volume initialized from "existingObjstoreSecret" field
+# store gateway queries object storage, whereas thanos sidecar only pushes to object storage
+storegateway:
+  enabled: true
+  serviceAccount:
+    create: false
+    name: ${THANOS_SA}

@@ -1,0 +1,39 @@
+grafana:
+  enabled: true
+  defaultDashboardsTimezone: browser
+  adminUser: root
+  adminPassword: bob123
+
+# connection refused on GKE
+coreDns:
+  enabled: false
+
+prometheus:
+  serviceAccount:
+    create: false
+    name: ${THANOS_SA}
+  prometheusSpec:
+    # external label is sent by prometheus to external systems
+    # identifies prom instance, see prom configuration
+    # thanos query deduplication for HA instances
+    replicaExternalLabelName: replica
+    replicaExternalLabelNameClear: false
+    # default setting will only match CRDs having helm release labels, match all when selector definition is empty
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    scrapeConfigSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    replicas: 2
+    # add thanos sidecar to prom instances
+    thanos:
+      objectStorageConfig:
+        existingSecret:
+          name: ${THANOS_SECRET}
+          key: "objstore.yml"
+  thanosService:
+    enabled: true
+  thanosServiceMonitor:
+    enabled: true
+cleanPrometheusOperatorObjectNames: true
+
+
